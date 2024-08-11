@@ -8,3 +8,5 @@ checkpoints
 .hypothesis/
 lightning_logs/
 mlruns/
+.vscode
+reconstructions/

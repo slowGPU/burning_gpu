@@ -48,7 +48,10 @@ class SMEBlock(nn.Module):
 
     def forward(self, masked_kspace: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
         # get low frequency line locations and mask them out
-        squeezed_mask = mask[:, 0, 0, :, 0]
+
+        # b, c, h, w, comp -> b, w
+        # squeezed_mask = mask[:, 0, 0, :, 0]
+        squeezed_mask = mask.squeeze((1, 2, 4))
         cent = squeezed_mask.shape[1] // 2
         # running argmin returns the first non-zero
         left = torch.argmin(squeezed_mask[:, :cent].flip(1), dim=1)
@@ -59,8 +62,8 @@ class SMEBlock(nn.Module):
         pad = (mask.shape[-2] - num_low_freqs + 1) // 2
 
         x = transforms.batched_mask_center(masked_kspace, pad, pad + num_low_freqs)
-
         # convert to image space
+        # x = torch.fft.ifft2(x).real
         x = fastmri.ifft2c(x)
         x, b = self.chans_to_batch_dim(x)
 
