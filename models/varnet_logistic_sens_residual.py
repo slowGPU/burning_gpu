@@ -84,7 +84,7 @@ class LogisticResidualProcessor(nn.Module):
         return out.unsqueeze(1)
 
 
-class VarNetLogisticSens(LitBaseE2E):
+class VarNetLogisticSensResidual(LitBaseE2E):
     """
     A full variational network model.
 

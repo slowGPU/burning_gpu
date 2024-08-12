@@ -6,6 +6,9 @@ from .varnet_hybrid_freeze import VarNetHybridFreeze
 from .varnet_rough_sens import VarNetRoughSens
 from .varnet_rough_sens_faster import VarNetRoughSensFaster
 from .varnet_logistic_sens import VarNetLogisticSens
+from .varnet_logistic_sens_residual import VarNetLogisticSensResidual
+from .varnet_logistic_unet_sens import VarNetLogisticUnetSens
+from .varnet_logistic_unet_sens_fix import VarNetLogisticUnetSensFix
 
 
 class VarNetOL(VarNet):
@@ -37,5 +40,20 @@ class VarNetRoughSensFasterOL(VarNetRoughSensFaster):
 
 
 class VarNetLogisticSensOL(VarNetLogisticSens):
+    def configure_optimizers(self, lr: float = 1e-3):
+        return torch.optim.Adam(self.parameters(), lr=lr)
+
+
+class VarNetLogisticSensResidualOL(VarNetLogisticSensResidual):
+    def configure_optimizers(self, lr: float = 1e-3):
+        return torch.optim.Adam(self.parameters(), lr=lr)
+
+
+class VarNetLogisticUnetSensOL(VarNetLogisticUnetSens):
+    def configure_optimizers(self, lr: float = 1e-3):
+        return torch.optim.Adam(self.parameters(), lr=lr)
+
+
+class VarNetLogisticUnetSensFixOL(VarNetLogisticUnetSensFix):
     def configure_optimizers(self, lr: float = 1e-3):
         return torch.optim.Adam(self.parameters(), lr=lr)
