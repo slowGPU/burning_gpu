@@ -1,9 +1,9 @@
+torch~=2.3.1
+torchvision~=0.18.1
+torchaudio~=2.3.1
+torchtext~=0.18.0
+opencv-python
 h5py
 scikit-image
-opencv-python==4.8.0.74
 lightning[pytorch-extra]
 mlflow
-torch==2.3.1
-torchvision==0.18.1
-torchaudio==2.3.1
-torchtext==0.18.0
