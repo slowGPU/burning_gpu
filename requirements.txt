@@ -3,3 +3,11 @@ h5py
 scikit-image
 lightning[pytorch-extra]
 mlflow
+
+ipython
+ipykernel
+ipywidgets
+tqdm
+matplotlib
+seaborn
+pandas
