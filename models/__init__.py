@@ -9,6 +9,7 @@ from .varnet_logistic_sens import VarNetLogisticSens
 from .varnet_logistic_sens_residual import VarNetLogisticSensResidual
 from .varnet_logistic_unet_sens import VarNetLogisticUnetSens
 from .varnet_logistic_unet_sens_fix import VarNetLogisticUnetSensFix
+from .varnet_freezed_sens_nafnet import VarNetFreezedSensNAFNet
 
 
 class VarNetOL(VarNet):
@@ -55,5 +56,9 @@ class VarNetLogisticUnetSensOL(VarNetLogisticUnetSens):
 
 
 class VarNetLogisticUnetSensFixOL(VarNetLogisticUnetSensFix):
+    def configure_optimizers(self, lr: float = 1e-3):
+        return torch.optim.Adam(self.parameters(), lr=lr)
+
+class VarNetFreezedSensNAFNetOL(VarNetFreezedSensNAFNet):
     def configure_optimizers(self, lr: float = 1e-3):
         return torch.optim.Adam(self.parameters(), lr=lr)

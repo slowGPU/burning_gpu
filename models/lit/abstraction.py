@@ -260,3 +260,77 @@ class LitBaseAdversarial(L.LightningModule, metaclass=ABCMeta):
         self.log("test_loss", loss, batch_size=masked_kspace.size(0))
 
         return loss
+
+class LitBaseGrappa(L.LightningModule, metaclass=ABCMeta):
+    def __init__(self):
+        super().__init__()
+
+        self.save_hyperparameters(ignore=self.ignore_hparams())
+
+    @staticmethod
+    def image_space_crop(image: torch.Tensor) -> torch.Tensor:
+        CROP_WIDTH: Final[int] = 384
+        CROP_HEIGHT: Final[int] = 384
+
+        return fastmri.data.transforms.center_crop(image, (CROP_HEIGHT, CROP_WIDTH))
+
+    @staticmethod
+    def ignore_hparams() -> Union[str, Sequence[str], None]:
+        return None
+
+    @abstractmethod
+    def forward(self, masked_kspace: torch.Tensor, mask: torch.Tensor, grappa: torch.Tensor) -> torch.Tensor:
+        pass
+
+    @abstractmethod
+    def training_step(self, batch, batch_idx):
+        pass
+
+    @abstractmethod
+    def validation_step(self, batch, batch_idx):
+        pass
+
+    @abstractmethod
+    def test_step(self, batch, batch_idx):
+        pass
+
+class LitBaseGrappaE2E(LitBaseGrappa, metaclass=ABCMeta):
+    model: nn.Module = None
+
+    def __init__(self):
+        super().__init__()
+
+        self.criterion = fastmri.losses.SSIMLoss()
+
+    def training_step(self, batch, batch_idx):
+        mask, masked_kspace, grappa, target, maximum, _, _ = batch
+
+        recon = self.image_space_crop(self.forward(masked_kspace, mask, grappa))
+
+        loss = self.criterion(recon, target, maximum)
+
+        self.log("loss", loss, batch_size=masked_kspace.size(0))
+
+        return loss
+
+    def validation_step(self, batch, batch_idx):
+        mask, masked_kspace, grappa, target, maximum, _, _ = batch
+
+        recon = self.image_space_crop(self.forward(masked_kspace, mask, grappa))
+
+        loss = self.criterion(recon, target, maximum)
+
+        self.log("val_loss", loss, batch_size=masked_kspace.size(0))
+
+        return loss
+
+    def test_step(self, batch, batch_idx):
+        mask, masked_kspace, grappa, target, maximum, _, _ = batch
+
+        recon = self.image_space_crop(self.forward(masked_kspace, mask, grappa))
+
+        loss = self.criterion(recon, target, maximum)
+
+        self.log("test_loss", loss, batch_size=masked_kspace.size(0))
+
+        return loss
