@@ -10,7 +10,9 @@ import h5py
 import numpy as np
 import torch
 from skimage.metrics import structural_similarity
+from typing import List, Final
 
+PUBLIC_ACCS: Final[List[str]] = ["acc4", "acc5", "acc8"]
 
 def save_reconstructions(reconstructions, out_dir, targets=None, inputs=None):
     """
