@@ -3,8 +3,6 @@ h5py
 scikit-image
 lightning[pytorch-extra]
 mlflow==2.15.0
-mamba-ssm
-monai
 
 ipython
 ipykernel
