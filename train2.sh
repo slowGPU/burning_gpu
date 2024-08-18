@@ -1,16 +1,17 @@
-# python main.py fit \
-#     --trainer.max_epochs 15 \
-#     --seed_everything 42 \
-#     --model 'VarNetLogisticBoundOL' \
-#     --data 'SliceDataModule' \
-#     --data.root '/home/Data' \
-
 python main.py fit \
     --trainer.max_epochs 15 \
     --seed_everything 42 \
-    --model 'VarNetLogisticBoundFullOL' \
-    --data 'SliceGrappaDataModule' \
+    --model 'VarNetLogisticBoundOL' \
+    --model.num_cascades 12 \
+    --data 'SliceDataModule' \
     --data.root '/Data' \
+
+# python main.py fit \
+#     --trainer.max_epochs 15 \
+#     --seed_everything 42 \
+#     --model 'VarNetLogisticBoundFullOL' \
+#     --data 'SliceGrappaDataModule' \
+#     --data.root '/Data' \
 
 # python main.py fit \
 #     --trainer.max_epochs 15 \

@@ -13,10 +13,11 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 import fastmri
-from models.external.LightMUNet import LightMUNet
+from models.base.unet import NormUnet, Unet
 from models.base.varnet_primitive import SMEBlock, VarNetBlock
 from models.external.ResNet import ResNet
-from models.lit.abstraction import LitBaseE2E
+from models.external.NAFNet.NAFNet_arch import NAFNet
+from models.lit.abstraction import LitBaseGrappaE2E
 
 
 class LogisticResidualAbsProcessor(nn.Module):
@@ -92,12 +93,21 @@ class LogisticResidualAbsProcessor(nn.Module):
         return out
 
 
-class LightMUNetProcessor(nn.Module):
-    def __init__(self, init_filters: int):
+class LogisticUnetProcessor(nn.Module):
+    def __init__(
+        self,
+        chans: int,
+        pools: int,
+        hidden_size: int,
+        background_upper_bound: float,
+        positive_lower_bound: float,
+        decay_upper_bound: float,
+    ):
         super().__init__()
 
-        self.unet = LightMUNet(
-            spatial_dims=2, in_channels=2, out_channels=2, init_filters=init_filters
+        self.unet = Unet(in_chans=2, out_chans=2, chans=chans, num_pool_layers=pools)
+        self.logistic = LogisticResidualAbsProcessor(
+            hidden_size, background_upper_bound, positive_lower_bound, decay_upper_bound
         )
 
     @staticmethod
@@ -128,56 +138,30 @@ class LightMUNetProcessor(nn.Module):
 
         assert c == 1 and comp == 2
 
-        # b, 1, h, w, 2 -> b, 1, 2, h, w -> b, 2, h, w
-        x = x.permute(0, 1, 4, 2, 3).reshape(b, c * comp, h, w)
-
-        # b, 2, h, w -> b, 2, h', w' -> b, 2, h, w
-        x, pad_params = self.pad(x)
-        x = self.unet(x)
-        x = self.unpad(x, *pad_params)
-
-        # b, 2, h, w -> b, 2, h, w, 1
-        x = x.unsqueeze(-1)
-
-        # b, 2, h, w, 1 -> b, 1, h, w, 2
-        x = x.permute(0, 4, 2, 3, 1)
-
-        return x
-
-
-class LogisticMambaProcessor(nn.Module):
-    def __init__(
-        self,
-        init_filters: int,
-        hidden_size: int,
-        background_upper_bound: float,
-        positive_lower_bound: float,
-        decay_upper_bound: float,
-    ):
-        super().__init__()
-
-        self.pol_processor = LightMUNetProcessor(init_filters)
-        self.logistic = LogisticResidualAbsProcessor(
-            hidden_size, background_upper_bound, positive_lower_bound, decay_upper_bound
-        )
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        b, c, h, w, comp = x.shape
-
-        assert c == 1 and comp == 2
-
         amp = self.logistic(x)
 
         # b, 1, h, w, 1 -> b, 1, h, w, 2
         amp = torch.cat((amp, torch.zeros_like(amp)), dim=-1)
 
-        rot = self.pol_processor(x)
+        # b, 1, h, w, 2 -> b, 1, 2, h, w -> b, 2, h, w
+        x = x.permute(0, 1, 4, 2, 3).reshape(b, c * comp, h, w)
+
+        # b, 2, h, w -> b, 2, h', w' -> b, 2, h, w
+        x, pad_params = self.pad(x)
+        rot = self.unet(x)
+        rot = self.unpad(rot, *pad_params)
+
+        # b, 2, h, w -> b, 2, h, w, 1
+        rot = rot.unsqueeze(-1)
+
+        # b, 2, h, w, 1 -> b, 1, h, w, 2
+        rot = rot.permute(0, 4, 2, 3, 1)
         rot = rot / fastmri.complex_abs(rot).unsqueeze(-1)
 
         return fastmri.complex_mul(amp, rot)
 
 
-class VarNetLogisticMamba(LitBaseE2E):
+class VarNetLogisticBoundFull(LitBaseGrappaE2E):
     """
     A full variational network model.
 
@@ -187,13 +171,19 @@ class VarNetLogisticMamba(LitBaseE2E):
 
     def __init__(
         self,
-        num_cascades: int = 1,
+        num_cascades: int = 12,
         sens_hidden_size: int = 32,
         sens_background_upper_bound: float = 0.5,
         sens_positive_lower_bound: float = 0.05,
         sens_decay_upper_bound: float = 8,
-        sens_init_filters: int = 8,
-        init_filters: int = 8,
+        sens_chans: int = 4,
+        sens_pools: int = 4,
+        chans: int = 18,
+        pools: int = 4,
+        nafnet_width: int = 32,
+        nafnet_enc_blk_nums: List[int] = [2, 2, 4, 8],
+        nafnet_middle_blk_num: int = 12,
+        nafnet_dec_blk_nums: List[int] = [2, 2, 2, 2],
     ):
         """
         Args:
@@ -206,8 +196,9 @@ class VarNetLogisticMamba(LitBaseE2E):
         """
 
         def make_sme_image_processor():
-            return LogisticMambaProcessor(
-                sens_init_filters,
+            return LogisticUnetProcessor(
+                sens_chans,
+                sens_pools,
                 sens_hidden_size,
                 sens_background_upper_bound,
                 sens_positive_lower_bound,
@@ -215,7 +206,7 @@ class VarNetLogisticMamba(LitBaseE2E):
             )
 
         def make_cascade_image_processor():
-            return LightMUNetProcessor(init_filters)
+            return NormUnet(chans, pools)
 
         super().__init__()
 
@@ -226,12 +217,45 @@ class VarNetLogisticMamba(LitBaseE2E):
                 for _ in range(num_cascades)
             ]
         )
+        self.nafnet = NAFNet(
+            img_channel=2,
+            width=nafnet_width,
+            enc_blk_nums=nafnet_enc_blk_nums,
+            middle_blk_num=nafnet_middle_blk_num,
+            dec_blk_nums=nafnet_dec_blk_nums,
+        )
+        self.postprocess = nn.Conv2d(
+            in_channels=2,
+            out_channels=1,
+            kernel_size=3,
+            padding=1,
+            stride=1,
+            groups=1,
+            bias=True,
+        )
 
-    def forward(self, masked_kspace: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
+    def forward(
+        self, masked_kspace: torch.Tensor, mask: torch.Tensor, grappa: torch.Tensor
+    ) -> torch.Tensor:
         sens_maps = self.sens_net(masked_kspace, mask)
         kspace_pred = masked_kspace.clone()
 
         for cascade in self.cascades:
             kspace_pred = cascade(kspace_pred, masked_kspace, mask, sens_maps)
 
-        return fastmri.rss(fastmri.complex_abs(fastmri.ifft2c(kspace_pred)), dim=1)
+        varnet_result = fastmri.rss(
+            fastmri.complex_abs(fastmri.ifft2c(kspace_pred)), dim=1
+        )
+        varnet_result = self.image_space_crop(varnet_result)
+
+        scaling_factor = torch.maximum(varnet_result.abs().max(), grappa.abs().max())
+        scaling_factor = scaling_factor / 255.0
+
+        varnet_result = varnet_result / scaling_factor
+        grappa = grappa / scaling_factor
+
+        nafnet_result = self.nafnet(torch.stack([varnet_result, grappa], dim=1))
+        nafnet_result = self.postprocess(nafnet_result).squeeze(1) + varnet_result
+        nafnet_result = nafnet_result * scaling_factor
+
+        return nafnet_result

@@ -13,6 +13,7 @@ from .varnet_freezed_sens_nafnet import VarNetFreezedSensNAFNet
 from .freezed_varnet_nafnet import FreezedVarNetNAFNet
 from .varnet_logistic_mamba import VarNetLogisticMamba
 from .varnet_logistic_bound import VarNetLogisticBound
+from .varnet_logistic_bound_full import VarNetLogisticBoundFull
 
 
 class LitAdam:
@@ -87,4 +88,8 @@ class VarNetLogisticMambaOL(LitAdamW, VarNetLogisticMamba):
 
 
 class VarNetLogisticBoundOL(LitAdamW, VarNetLogisticBound):
+    pass
+
+
+class VarNetLogisticBoundFullOL(LitAdamW, VarNetLogisticBoundFull):
     pass
