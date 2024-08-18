@@ -61,7 +61,7 @@ class LitBaseE2E(LitBase, metaclass=ABCMeta):
 
         loss = self.criterion(recon, target, maximum)
 
-        self.log("loss", loss, batch_size=masked_kspace.size(0))
+        self.log("loss", loss, batch_size=masked_kspace.size(0), prog_bar=True)
 
         return loss
 
@@ -137,6 +137,7 @@ class LitBaseHybrid(LitBase, metaclass=ABCMeta):
         self.log_dict(
             {"loss_sme": loss_sme, "loss_recon": loss_recon},
             batch_size=masked_kspace.size(0),
+            prog_bar=True,
         )
 
     def validation_step(self, batch, batch_idx):
@@ -239,6 +240,7 @@ class LitBaseAdversarial(L.LightningModule, metaclass=ABCMeta):
                 "loss_gen": loss_gen,
             },
             batch_size=masked_kspace.size(0),
+            prog_bar=True,
         )
 
     def validation_step(self, batch, batch_idx):
@@ -261,6 +263,7 @@ class LitBaseAdversarial(L.LightningModule, metaclass=ABCMeta):
 
         return loss
 
+
 class LitBaseGrappa(L.LightningModule, metaclass=ABCMeta):
     def __init__(self):
         super().__init__()
@@ -279,7 +282,9 @@ class LitBaseGrappa(L.LightningModule, metaclass=ABCMeta):
         return None
 
     @abstractmethod
-    def forward(self, masked_kspace: torch.Tensor, mask: torch.Tensor, grappa: torch.Tensor) -> torch.Tensor:
+    def forward(
+        self, masked_kspace: torch.Tensor, mask: torch.Tensor, grappa: torch.Tensor
+    ) -> torch.Tensor:
         pass
 
     @abstractmethod
@@ -293,6 +298,7 @@ class LitBaseGrappa(L.LightningModule, metaclass=ABCMeta):
     @abstractmethod
     def test_step(self, batch, batch_idx):
         pass
+
 
 class LitBaseGrappaE2E(LitBaseGrappa, metaclass=ABCMeta):
     model: nn.Module = None
@@ -309,7 +315,7 @@ class LitBaseGrappaE2E(LitBaseGrappa, metaclass=ABCMeta):
 
         loss = self.criterion(recon, target, maximum)
 
-        self.log("loss", loss, batch_size=masked_kspace.size(0))
+        self.log("loss", loss, batch_size=masked_kspace.size(0), prog_bar=True)
 
         return loss
 

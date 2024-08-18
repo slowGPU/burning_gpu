@@ -10,6 +10,7 @@ from .varnet_logistic_sens_residual import VarNetLogisticSensResidual
 from .varnet_logistic_unet_sens import VarNetLogisticUnetSens
 from .varnet_logistic_unet_sens_fix import VarNetLogisticUnetSensFix
 from .varnet_freezed_sens_nafnet import VarNetFreezedSensNAFNet
+from .freezed_varnet_nafnet import FreezedVarNetNAFNet
 
 
 class VarNetOL(VarNet):
@@ -59,6 +60,25 @@ class VarNetLogisticUnetSensFixOL(VarNetLogisticUnetSensFix):
     def configure_optimizers(self, lr: float = 1e-3):
         return torch.optim.Adam(self.parameters(), lr=lr)
 
+
 class VarNetFreezedSensNAFNetOL(VarNetFreezedSensNAFNet):
     def configure_optimizers(self, lr: float = 1e-3):
         return torch.optim.Adam(self.parameters(), lr=lr)
+
+
+class FreezedVarNetNAFNetOL(FreezedVarNetNAFNet):
+    def configure_optimizers(self, lr: float = 1e-3):
+        optimizer = torch.optim.AdamW(
+            self.parameters(), lr=lr, betas=[0.9, 0.9], weight_decay=0
+        )
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+            optimizer, T_max=200000, eta_min=1e-7
+        )
+
+        return {
+            "optimizer": optimizer,
+            "lr_scheduler": {
+                "scheduler": scheduler,
+                "interval": "step",
+            },
+        }

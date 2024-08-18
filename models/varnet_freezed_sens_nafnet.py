@@ -32,10 +32,10 @@ class VarNetFreezedSensNAFNet(LitBaseGrappaE2E):
         num_cascades: int = 12,
         chans: int = 18,
         pools: int = 4,
-        nafnet_width: int = 64,
-        nafnet_enc_blk_nums: List[int] = [1, 1, 1, 28],
-        nafnet_middle_blk_num: int = 1,
-        nafnet_dec_blk_nums: List[int] = [1, 1, 1, 1],
+        nafnet_width: int = 32,
+        nafnet_enc_blk_nums: List[int] = [2, 2, 4, 8],
+        nafnet_middle_blk_num: int = 12,
+        nafnet_dec_blk_nums: List[int] = [2, 2, 2, 2],
     ):
         """
         Args:
@@ -69,8 +69,6 @@ class VarNetFreezedSensNAFNet(LitBaseGrappaE2E):
             dec_blk_nums=nafnet_dec_blk_nums,
         )
 
-        self.conv = nn.Conv2d(2, 1, 1)
-
         self.sens_net.eval()
         for params in self.sens_net.parameters():
             params.requires_grad = False
@@ -89,4 +87,4 @@ class VarNetFreezedSensNAFNet(LitBaseGrappaE2E):
         )
         varnet_result = self.image_space_crop(varnet_result)
 
-        return self.conv(self.nafnet(torch.stack([varnet_result, grappa], dim=1)))
+        return self.nafnet(torch.stack([varnet_result, grappa], dim=1))[:, 1]
