@@ -11,62 +11,16 @@ from .varnet_logistic_unet_sens import VarNetLogisticUnetSens
 from .varnet_logistic_unet_sens_fix import VarNetLogisticUnetSensFix
 from .varnet_freezed_sens_nafnet import VarNetFreezedSensNAFNet
 from .freezed_varnet_nafnet import FreezedVarNetNAFNet
+from .varnet_logistic_mamba import VarNetLogisticMamba
+from .varnet_logistic_bound import VarNetLogisticBound
 
 
-class VarNetOL(VarNet):
+class LitAdam:
     def configure_optimizers(self, lr: float = 1e-3):
         return torch.optim.Adam(self.parameters(), lr=lr)
 
 
-class VarNetFreezedSensOL(VarNetFreezedSens):
-    def configure_optimizers(self, lr: float = 1e-3):
-        return torch.optim.Adam(self.parameters(), lr=lr)
-
-
-class VarNetHybridFreezeOL(VarNetHybridFreeze):
-    def configure_optimizers(self, lr1: float = 1e-3, lr2: float = 1e-3):
-        sme_opt = torch.optim.Adam(self.sme_parameters(), lr=lr1)
-        recon_opt = torch.optim.Adam(self.recon_parameters(), lr=lr2)
-
-        return sme_opt, recon_opt
-
-
-class VarNetRoughSensOL(VarNetRoughSens):
-    def configure_optimizers(self, lr: float = 1e-3):
-        return torch.optim.Adam(self.parameters(), lr=lr)
-
-
-class VarNetRoughSensFasterOL(VarNetRoughSensFaster):
-    def configure_optimizers(self, lr: float = 1e-3):
-        return torch.optim.Adam(self.parameters(), lr=lr)
-
-
-class VarNetLogisticSensOL(VarNetLogisticSens):
-    def configure_optimizers(self, lr: float = 1e-3):
-        return torch.optim.Adam(self.parameters(), lr=lr)
-
-
-class VarNetLogisticSensResidualOL(VarNetLogisticSensResidual):
-    def configure_optimizers(self, lr: float = 1e-3):
-        return torch.optim.Adam(self.parameters(), lr=lr)
-
-
-class VarNetLogisticUnetSensOL(VarNetLogisticUnetSens):
-    def configure_optimizers(self, lr: float = 1e-3):
-        return torch.optim.Adam(self.parameters(), lr=lr)
-
-
-class VarNetLogisticUnetSensFixOL(VarNetLogisticUnetSensFix):
-    def configure_optimizers(self, lr: float = 1e-3):
-        return torch.optim.Adam(self.parameters(), lr=lr)
-
-
-class VarNetFreezedSensNAFNetOL(VarNetFreezedSensNAFNet):
-    def configure_optimizers(self, lr: float = 1e-3):
-        return torch.optim.Adam(self.parameters(), lr=lr)
-
-
-class FreezedVarNetNAFNetOL(FreezedVarNetNAFNet):
+class LitAdamW:
     def configure_optimizers(self, lr: float = 1e-3):
         optimizer = torch.optim.AdamW(
             self.parameters(), lr=lr, betas=[0.9, 0.9], weight_decay=0
@@ -82,3 +36,55 @@ class FreezedVarNetNAFNetOL(FreezedVarNetNAFNet):
                 "interval": "step",
             },
         }
+
+
+class VarNetOL(LitAdam, VarNet):
+    pass
+
+
+class VarNetFreezedSensOL(LitAdam, VarNetFreezedSens):
+    pass
+
+
+class VarNetHybridFreezeOL(LitAdam, VarNetHybridFreeze):
+    pass
+
+
+class VarNetRoughSensOL(LitAdam, VarNetRoughSens):
+    pass
+
+
+class VarNetRoughSensFasterOL(LitAdam, VarNetRoughSensFaster):
+    pass
+
+
+class VarNetLogisticSensOL(LitAdam, VarNetLogisticSens):
+    pass
+
+
+class VarNetLogisticSensResidualOL(LitAdam, VarNetLogisticSensResidual):
+    pass
+
+
+class VarNetLogisticUnetSensOL(LitAdam, VarNetLogisticUnetSens):
+    pass
+
+
+class VarNetLogisticUnetSensFixOL(LitAdam, VarNetLogisticUnetSensFix):
+    pass
+
+
+class VarNetFreezedSensNAFNetOL(LitAdam, VarNetFreezedSensNAFNet):
+    pass
+
+
+class FreezedVarNetNAFNetOL(LitAdamW, FreezedVarNetNAFNet):
+    pass
+
+
+class VarNetLogisticMambaOL(LitAdamW, VarNetLogisticMamba):
+    pass
+
+
+class VarNetLogisticBoundOL(LitAdamW, VarNetLogisticBound):
+    pass
