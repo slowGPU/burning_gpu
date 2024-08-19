@@ -8,6 +8,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+import fastmri
+
 
 class SSIMLoss(nn.Module):
     """
@@ -52,3 +54,18 @@ class SSIMLoss(nn.Module):
         S = (A1 * A2) / D
 
         return 1 - S.mean()
+
+
+class SSIMLossWithL1(fastmri.losses.SSIMLoss):
+    def __init__(
+        self, win_size: int = 7, k1: float = 0.01, k2: float = 0.03, lamb: float = 0.1
+    ):
+        super().__init__(win_size, k1, k2)
+        self.lamb = lamb
+
+    def forward(self, X: torch.Tensor, Y: torch.Tensor, data_range: torch.Tensor):
+        ssim = super().forward(X, Y, data_range)
+
+        l1 = F.l1_loss(X, Y) / data_range
+
+        return ssim + l1 * self.lamb
