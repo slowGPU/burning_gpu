@@ -1,17 +1,21 @@
-python main.py fit \
-    --trainer.max_epochs 15 \
-    --seed_everything 42 \
-    --model 'VarNetLogisticBoundOL' \
-    --model.num_cascades 12 \
-    --data 'SliceDataModule' \
-    --data.root '/Data' \
-
 # python main.py fit \
 #     --trainer.max_epochs 15 \
 #     --seed_everything 42 \
-#     --model 'VarNetLogisticBoundFullOL' \
-#     --data 'SliceGrappaDataModule' \
+#     --model 'VarNetLogisticBoundOL' \
+#     --model.num_cascades 40 \
+#     --data 'SliceDataModule' \
 #     --data.root '/Data' \
+
+python main.py fit \
+    --trainer.max_epochs 15 \
+    --seed_everything 42 \
+    --model.num_cascades 40 \
+    --model 'VarNetLogisticBoundFullOL' \
+    --model.nafnet_width 64 \
+    --model.nafnet_enc_blk_nums \[2,2,8,28\] \
+    --model.nafnet_dec_blk_nums \[4,8,8,2\] \
+    --data 'SliceGrappaDataModule' \
+    --data.root '/Data' \
 
 # python main.py fit \
 #     --trainer.max_epochs 15 \

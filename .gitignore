@@ -10,3 +10,7 @@ lightning_logs/
 mlruns/
 .vscode
 reconstructions/
+mlartifacts/
+onstart.sh
+ports.log
+.zed

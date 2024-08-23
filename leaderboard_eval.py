@@ -92,7 +92,7 @@ def forward(args):
 
                 with h5py.File(y_fname, "r") as hf:
                     recon = hf[args.output_key][i_slice]
-                    recon = torch.from_numpy(recon).to(device=device)
+                    recon = torch.from_numpy(recon).to(device=device).squeeze()
 
                 # ssim_total += ssim_calculator(recon, target, maximum).cpu().numpy()
                 ssim_total += (

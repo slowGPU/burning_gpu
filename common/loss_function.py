@@ -58,14 +58,14 @@ class SSIMLoss(nn.Module):
 
 class SSIMLossWithL1(fastmri.losses.SSIMLoss):
     def __init__(
-        self, win_size: int = 7, k1: float = 0.01, k2: float = 0.03, lamb: float = 0.1
+        self, win_size: int = 7, k1: float = 0.01, k2: float = 0.03, alpha: float = 0.84
     ):
         super().__init__(win_size, k1, k2)
-        self.lamb = lamb
+        self.alpha = alpha
 
     def forward(self, X: torch.Tensor, Y: torch.Tensor, data_range: torch.Tensor):
         ssim = super().forward(X, Y, data_range)
 
         l1 = F.l1_loss(X, Y) / data_range
 
-        return ssim + l1 * self.lamb
+        return self.alpha * ssim + (1 - self.alpha) * l1
