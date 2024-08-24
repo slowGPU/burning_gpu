@@ -129,7 +129,7 @@ class NAFNet(nn.Module):
 
         self.padder_size = 2 ** len(self.encoders)
 
-    def forward(self, inp):
+    def forward(self, inp) -> torch.Tensor:
         B, C, H, W = inp.shape
         inp = self.check_image_size(inp)
 
@@ -154,7 +154,7 @@ class NAFNet(nn.Module):
 
         return x[:, :, :H, :W]
 
-    def check_image_size(self, x):
+    def check_image_size(self, x) -> torch.Tensor:
         _, _, h, w = x.size()
         mod_pad_h = (self.padder_size - h % self.padder_size) % self.padder_size
         mod_pad_w = (self.padder_size - w % self.padder_size) % self.padder_size

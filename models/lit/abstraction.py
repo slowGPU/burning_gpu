@@ -340,3 +340,45 @@ class LitBaseGrappaE2E(LitBaseGrappa, metaclass=ABCMeta):
         self.log("test_loss", loss, batch_size=masked_kspace.size(0))
 
         return loss
+
+class LitBaseGrappaMSEE2E(LitBaseGrappa, metaclass=ABCMeta):
+    model: nn.Module = None
+
+    def __init__(self):
+        super().__init__()
+
+        # self.criterion = fastmri.losses.SSIMLoss()
+        self.criterion = nn.MSELoss()
+
+    def training_step(self, batch, batch_idx):
+        mask, masked_kspace, grappa, target, maximum, _, _ = batch
+
+        recon = self.image_space_crop(self.forward(masked_kspace, mask, grappa))
+
+        loss = self.criterion(recon/maximum, target/maximum)
+
+        self.log("loss", loss, batch_size=masked_kspace.size(0), prog_bar=True)
+
+        return loss
+
+    def validation_step(self, batch, batch_idx):
+        mask, masked_kspace, grappa, target, maximum, _, _ = batch
+
+        recon = self.image_space_crop(self.forward(masked_kspace, mask, grappa))
+
+        loss = self.criterion(recon/maximum, target/maximum)
+
+        self.log("val_loss", loss, batch_size=masked_kspace.size(0))
+
+        return loss
+
+    def test_step(self, batch, batch_idx):
+        mask, masked_kspace, grappa, target, maximum, _, _ = batch
+
+        recon = self.image_space_crop(self.forward(masked_kspace, mask, grappa))
+
+        loss = self.criterion(recon/maximum, target/maximum)
+
+        self.log("test_loss", loss, batch_size=masked_kspace.size(0))
+
+        return loss

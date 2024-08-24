@@ -2,9 +2,9 @@ python main.py fit \
     --trainer.max_epochs 15 \
     --seed_everything 42 \
     --model 'VarNetLogisticBoundOL' \
-    --model.num_cascades 12 \
+    --model.num_cascades 30 \
     --data 'SliceDataModule' \
-    --data.root '/Data' \
+    --data.root '/home/Data' \
 
 # python main.py fit \
 #     --trainer.max_epochs 15 \

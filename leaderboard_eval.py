@@ -95,6 +95,8 @@ def forward(args):
                     recon = torch.from_numpy(recon).to(device=device)
 
                 # ssim_total += ssim_calculator(recon, target, maximum).cpu().numpy()
+                if recon.dim() == 3:
+                    recon = recon.squeeze(0)
                 ssim_total += (
                     ssim_calculator(recon * mask, target * mask, maximum).cpu().numpy()
                 )

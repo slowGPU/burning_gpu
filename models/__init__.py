@@ -10,11 +10,23 @@ from .varnet_logistic_sens_residual import VarNetLogisticSensResidual
 from .varnet_logistic_unet_sens import VarNetLogisticUnetSens
 from .varnet_logistic_unet_sens_fix import VarNetLogisticUnetSensFix
 from .varnet_freezed_sens_nafnet import VarNetFreezedSensNAFNet
+from .grappa_nafnet import GrappaNAFNet
+from .grappa_conv_nafnet import GrappaConvNAFNet
+from .grappa_conv3_nafnet import GrappaConv3NAFNet
+from .grappa_nafnet_mse import GrappaNAFNetMSE
+from .grappa_conv_nafnet_mse import GrappaConvNAFNetMSE
 from .freezed_varnet_nafnet import FreezedVarNetNAFNet
 from .varnet_logistic_mamba import VarNetLogisticMamba
 from .varnet_logistic_bound import VarNetLogisticBound
 from .varnet_logistic_bound_full import VarNetLogisticBoundFull
+from .varnet_mamba import VarNetMamba
+from .varnet_full import VarNetFull
+from .varnet_full_single_grappa import VarNetFullSingleGrappa
 
+from .freezed_varnet_single_nafnet import FreezedVarNetSingleNAFNet
+
+from .varnet_freezed_sens_toy import VarNetFreezedSensToy
+from .varnet_freezed_sens_toy_nafnet import VarNetFreezedSensToyNAFNet
 
 class LitAdam:
     def configure_optimizers(self, lr: float = 1e-3):
@@ -92,4 +104,32 @@ class VarNetLogisticBoundOL(LitAdamW, VarNetLogisticBound):
 
 
 class VarNetLogisticBoundFullOL(LitAdamW, VarNetLogisticBoundFull):
+    pass
+
+class GrappaConvNAFNetOL(LitAdamW, GrappaConvNAFNet):
+    pass
+
+class GrappaConv3NAFNetOL(LitAdamW, GrappaConv3NAFNet):
+    pass
+
+class GrappaNAFNetMSEOL(LitAdamW, GrappaNAFNetMSE):
+    pass
+
+class VarNetMambaOL(LitAdamW, VarNetMamba):
+    pass
+
+class VarNetFullOL(LitAdamW, VarNetFull):
+    pass
+
+class VarNetFullSingleGrappaOL(LitAdamW, VarNetFullSingleGrappa):
+    pass
+
+
+class FreezedVarNetSingleNAFNetOL(LitAdamW, FreezedVarNetSingleNAFNet):
+    pass
+
+class VarNetFreezedSensToyOL(LitAdamW, VarNetFreezedSensToy):
+    pass
+
+class VarNetFreezedSensToyNAFNetOL(LitAdamW, VarNetFreezedSensToyNAFNet):
     pass

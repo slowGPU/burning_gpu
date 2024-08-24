@@ -37,10 +37,10 @@ class FreezedVarNetNAFNet(LitBaseGrappaE2E):
     def __init__(
         self,
         varnet_path: Union[str, Path],
-        nafnet_width: int = 32,
-        nafnet_enc_blk_nums: List[int] = [2, 2, 4, 8],
-        nafnet_middle_blk_num: int = 12,
-        nafnet_dec_blk_nums: List[int] = [2, 2, 2, 2],
+        nafnet_width: int = 64,
+        nafnet_enc_blk_nums: List[int] = [2, 2, 8, 28],
+        nafnet_middle_blk_num: int = 16,
+        nafnet_dec_blk_nums: List[int] = [4, 8, 8, 2],
     ):
         """
         Args:
